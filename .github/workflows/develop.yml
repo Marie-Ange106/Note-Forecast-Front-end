@@ -31,7 +31,13 @@ jobs:
               run: |
                   npm install
                   npm run build
-
+            - name: Check if dist/fuse directory exists
+              run: |
+                if [ ! -d "dist/fuse" ]; then
+                  echo "Directory dist/fuse does not exist."
+                  exit 1
+                fi   
+            
             - name: List source directory contents
               run: ls -la dist/fuse
 
