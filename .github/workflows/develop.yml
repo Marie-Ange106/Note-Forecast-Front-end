@@ -30,19 +30,13 @@ jobs:
             - name: Install dependencies and build
               run: |
                   npm install
-                  npm run build
-            - name: Check if dist/fuse directory exists
-              run: |
-                if [ ! -d "dist/fuse" ]; then
-                  echo "Directory dist/fuse does not exist."
-                  exit 1
-                fi   
+                  npm run build  
             
             - name: List source directory contents
-              run: ls -la dist/fuse
+              run: ls -la dist/note-forecast-frontend
 
             - name: Create deployment artefact
-              run: tar -czf ${{ github.sha }}.tar.gz -C dist/fuse .
+              run: tar -czf ${{ github.sha }}.tar.gz -C dist/note-forecast-frontend .
 
             - name: Store artefact for distribution
               uses: actions/upload-artifact@v2
@@ -80,7 +74,7 @@ jobs:
 
         steps:
             # - name: List contents before extraction
-            #   run: ls -la dist/fuse
+            #   run: ls -la dist/note-forecast-frontend
 
             - name: Download artefact for distribution
               uses: actions/download-artifact@v2
