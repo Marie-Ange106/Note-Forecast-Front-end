@@ -1,101 +1,101 @@
 name: CI/CD Pipeline
 
 on:
-    push:
-        branches:
-            - Develop
-    pull_request:
-        branches:
-            - Develop
-    workflow_dispatch:
-        inputs:
-            environment:
-                description: 'Deployment Environment'
-                required: true
-                default: 'production'
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment Environment"
+        required: true
+        default: "production"
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v2.5.0
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2.5.0
 
-            - name: Setup Node.js
-              uses: actions/setup-node@v2.5.0
-              with:
-                  node-version: 20.x
-                  cache: "npm"
+      - name: Setup Node.js
+        uses: actions/setup-node@v2.5.0
+        with:
+          node-version: 20.x
+          cache: "npm"
 
-            - name: Install dependencies and build
-              run: |
-                  npm install
-                  npm run build
+      - name: Install dependencies and build
+        run: |
+          npm install
+          npm run build
 
-            - name: List source directory contents
-              run: ls -la dist/fuse
+      - name: List source directory contents
+        run: ls -la dist/fuse
 
-            - name: Create deployment artefact
-              run: tar -czf ${{ github.sha }}.tar.gz -C dist/fuse .
+      - name: Create deployment artefact
+        run: tar -czf ${{ github.sha }}.tar.gz -C dist/fuse .
 
-            - name: Store artefact for distribution
-              uses: actions/upload-artifact@v2
-              with:
-                  name: app-build
-                  path: ${{ github.sha }}.tar.gz
+      - name: Store artefact for distribution
+        uses: actions/upload-artifact@v2
+        with:
+          name: app-build
+          path: ${{ github.sha }}.tar.gz
 
-    # unit-test:
-    #     runs-on: ubuntu-latest
-    #     timeout-minutes: 10
-    #     needs: build
+  # unit-test:
+  #     runs-on: ubuntu-latest
+  #     timeout-minutes: 10
+  #     needs: build
 
-    #     steps:
-    #         - name: Checkout repository
-    #           uses: actions/checkout@v4
+  #     steps:
+  #         - name: Checkout repository
+  #           uses: actions/checkout@v4
 
-    #         - name: Set up Node.js
-    #           uses: actions/setup-node@v4
-    #           with:
-    #               node-version: 18.16.1
-    #               cache: "npm"
+  #         - name: Set up Node.js
+  #           uses: actions/setup-node@v4
+  #           with:
+  #               node-version: 18.16.1
+  #               cache: "npm"
 
-    #         - name: Install dependencies and run tests
-    #           run: |
-    #               npm install
-    #               npm test -sourceMap=false --watch=false --exclude=**/*.exclude.spec.ts --browsers=ChromeHeadless
+  #         - name: Install dependencies and run tests
+  #           run: |
+  #               npm install
+  #               npm test -sourceMap=false --watch=false --exclude=**/*.exclude.spec.ts --browsers=ChromeHeadless
 
-    #         - name: End test
-    #           run: |
-    #               echo "Successfully tested"
+  #         - name: End test
+  #           run: |
+  #               echo "Successfully tested"
 
-    prepare-release-on-servers:
-        runs-on: ubuntu-latest
-        needs: unit-test
+  prepare-release-on-servers:
+    runs-on: ubuntu-latest
+    needs: unit-test
 
-        steps:
-            # - name: List contents before extraction
-            #   run: ls -la dist/fuse
+    steps:
+      # - name: List contents before extraction
+      #   run: ls -la dist/fuse
 
-            - name: Download artefact for distribution
-              uses: actions/download-artifact@v2
-              with:
-                  name: app-build
-                  path: dist/fuse
+      - name: Download artefact for distribution
+        uses: actions/download-artifact@v2
+        with:
+          name: app-build
+          path: dist/fuse
 
-            - name: Extract files
-              run: tar -xzf dist/fuse/${{ github.sha }}.tar.gz -C .
+      - name: Extract files
+        run: tar -xzf dist/fuse/${{ github.sha }}.tar.gz -C .
 
-            - name: Drop zip and tar files
-              run: rm -r dist
+      - name: Drop zip and tar files
+        run: rm -r dist
 
-            - name: Copy file via ssh key
-              uses: appleboy/scp-action@master
-              with:
-                  host: ${{ secrets.SSH_HOST_PROD }}
-                  username: ${{ secrets.SSH_USER_PROD }}
-                  password: ${{ secrets.SSH_PASSWORD_PROD }}
-                  port: 22
-                  source: .
-                  target: ${{ secrets.SSH_PATH_PROD }}
-                  overwrite: true
-                  debug: true
+      - name: Copy file via ssh key
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST_PROD }}
+          username: ${{ secrets.SSH_USER_PROD }}
+          password: ${{ secrets.SSH_PASSWORD_PROD }}
+          port: 22
+          source: .
+          target: ${{ secrets.SSH_PATH_PROD }}
+          overwrite: true
+          debug: true
