@@ -80,10 +80,10 @@ jobs:
               uses: actions/download-artifact@v2
               with:
                   name: app-build
-                  path: dist/fuse
+                  path: dist/note-forecast-frontend
 
             - name: Extract files
-              run: tar -xzf dist/fuse/${{ github.sha }}.tar.gz -C .
+              run: tar -xzf dist/note-forecast-frontend/${{ github.sha }}.tar.gz -C .
 
             - name: Drop zip and tar files
               run: rm -r dist
